@@ -1,5 +1,7 @@
 # Git Deep
 
+![](screenshot.png)
+
 ```bash
 yarn global add git-deep
 ```
@@ -13,6 +15,6 @@ $ git-deep 'git push'
 ```
 
 ### Optional Arguments
-- `-c, --children`: Run command on children only
+- `-c, --childrenOnly`: Run command on children only
 - `-p, --parallel`: Run commands in parallel
 
