@@ -21,14 +21,17 @@ var command = program.args.map(function (a) {
   return decodeURIComponent(a.split(' ').length > 1 ? a : a);
 }).join(' ');
 
-console.log(__filename);
+var child = exec('git submodule foreach \'' + __filename +
+  (program.parallel ? ' -p ' : ' ') + encodeURIComponent(command) + '\' || :');
 
-var child = exec('git submodule foreach \'' + __filename + ' ' + encodeURIComponent(command) + '\' || :');
-
-child.on('exit', function (code) {
-  if (code !== 0 || process.onlyChildren) {
-    return process.exit(code)
-  }
-
+if (program.parallel) {
   exec(command);
-});
+} else {
+  child.on('exit', function (code) {
+    if (code !== 0 || process.onlyChildren) {
+      return process.exit(code)
+    }
+
+    exec(command);
+  });
+}

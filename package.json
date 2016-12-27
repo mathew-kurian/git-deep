@@ -1,5 +1,16 @@
 {
+  "bin": "index.js",
   "dependencies": {
     "commander": "^2.9.0"
-  }
+  },
+  "scripts": {
+    "git-deep": "./index.js"
+  },
+  "name": "git-deep",
+  "version": "1.0.0",
+  "description": "Send commands recursively through git submodules",
+  "main": "index.js",
+  "repository": "https://github.com/bluejamesbond/git-deep",
+  "author": "bluejamesbond <MathewKurian@utexas.edu>",
+  "license": "MIT"
 }
