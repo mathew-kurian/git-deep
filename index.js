@@ -21,7 +21,9 @@ var command = program.args.map(function (a) {
   return decodeURIComponent(a.split(' ').length > 1 ? a : a);
 }).join(' ');
 
-var child = exec('git submodule foreach \'./' + __dirname + ' ' + encodeURIComponent(command) + '\' || :');
+console.log(__filename);
+
+var child = exec('git submodule foreach \'' + __filename + ' ' + encodeURIComponent(command) + '\' || :');
 
 child.on('exit', function (code) {
   if (code !== 0 || process.onlyChildren) {
