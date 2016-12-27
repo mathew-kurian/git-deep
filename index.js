@@ -4,6 +4,7 @@ var program = require('commander');
 var spawn = require('child_process').spawn;
 var execSync = require('child_process').execSync;
 var chalk = require('chalk');
+var path = require('path');
 
 program
   .allowUnknownOption(true)
@@ -13,16 +14,16 @@ program
   .option('-p, --parallel', 'Run each child parallel')
   .parse(process.argv);
 
-function exec(command) {
+function exec(command, cwd) {
   if (!~process.platform.indexOf('win')) {
     return spawn('cmd', ['/s', '/c', command], {
       stdio: ['ignore', process.stdout, process.stderr],
-      cwd: process.cwd()
+      cwd: cwd || process.cwd()
     })
   } else {
     return spawn('/bin/sh', ['-c', command], {
       stdio: ['ignore', process.stdout, process.stderr],
-      cwd: process.cwd()
+      cwd: cwd || process.cwd()
     })
   }
 }
@@ -47,13 +48,24 @@ var command = rawArgs.map(function (a) {
 try {
   execSync('git status');
 
-  var child = exec('git submodule foreach \'' + __filename +
-    (program.parallel ? ' -p ' : ' ') + encodeURIComponent(command) + '\' || :');
-
+  var childCommand = __filename + (program.parallel ? ' -p ' : ' ') + encodeURIComponent(command);
   if (program.parallel) {
+    String(execSync('git submodule status'))
+      .trim()
+      .split('\n')
+      .forEach(function (a) {
+        var parts = a.trim().split(' ');
+        if (parts.length === 3) {
+          var submodulepath = path.join(process.cwd(), parts[1]);
+          exec(childCommand, submodulepath);
+        }
+      });
+
     console.log('Execute: ' + chalk.yellow(command) + ' ' + chalk.gray('(' + process.cwd() + ')'));
     exec(command);
   } else {
+    var child = exec('git submodule foreach \'' + childCommand + '\' || :');
+
     child.on('exit', function (code) {
       if (code !== 0 || program.childrenOnly) {
         return process.exit(code)

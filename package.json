@@ -5,7 +5,7 @@
     "commander": "^2.9.0"
   },
   "name": "git-deep",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "Send commands recursively through git submodules",
   "main": "index.js",
   "repository": "https://github.com/bluejamesbond/git-deep",
