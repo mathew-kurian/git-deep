@@ -4,7 +4,10 @@ var program = require('commander');
 var spawn = require('child_process').spawn;
 var execSync = require('child_process').execSync;
 var chalk = require('chalk');
+var fs = require('fs');
 var path = require('path');
+var async = require('async');
+var escape = require('escape-quotes');
 
 program
   .allowUnknownOption(true)
@@ -41,34 +44,58 @@ function stripStart(rawArgs) {
 
 var rawArgs = stripStart(program.rawArgs.slice(2));
 
-var command = rawArgs.map(function (a) {
-  return decodeURIComponent(a.split(' ').length > 1 ? a : a);
-}).join(' ');
+try {
+  rawArgs = JSON.parse(decodeURIComponent(rawArgs)) || [];
+} catch (e) {
+  // ignore
+}
+
+rawArgs = rawArgs.map(function (arg) {
+  if (arg.indexOf(' ') > -1) {
+    return '\'' + escape(arg) + '\'';
+  }
+  return arg;
+});
+
+if (rawArgs.length === 1 && rawArgs[0].charAt(0) === '\'') {
+  rawArgs[0] = rawArgs[0].substring(1, rawArgs[0].length - 1);
+}
+
+var command = rawArgs.join(' ');
 
 try {
   execSync('git status');
 
-  var childCommand = __filename + (program.parallel ? ' -p ' : ' ') + encodeURIComponent(command);
-  if (program.parallel) {
-    String(execSync('git submodule status'))
+  var submodulePaths =
+    String(execSync('git submodule foreach \'pwd\''))
       .trim()
       .split('\n')
-      .forEach(function (a) {
-        var parts = a.trim().split(' ');
-        if (parts.length === 3) {
-          var submodulepath = path.join(process.cwd(), parts[1]);
-          exec(childCommand, submodulepath);
+      .filter(function (a) {
+        if (fs.existsSync(a)) {
+          return true;
         }
       });
+
+  var childCommand = __filename + (program.parallel ? ' -p ' : ' ') + encodeURIComponent(JSON.stringify(rawArgs));
+  if (program.parallel) {
+    for (var i = 0; i < submodulePaths.length; i++) {
+      exec(childCommand, submodulePaths[i]);
+    }
+
+    if (program.childrenOnly) {
+      return;
+    }
 
     console.log('Execute: ' + chalk.yellow(command) + ' ' + chalk.gray('(' + process.cwd() + ')'));
     exec(command);
   } else {
-    var child = exec('git submodule foreach \'' + childCommand + '\' || :');
-
-    child.on('exit', function (code) {
-      if (code !== 0 || program.childrenOnly) {
-        return process.exit(code)
+    async.each(submodulePaths, function (path, callback) {
+      var child = exec(childCommand, path);
+      child.on('exit', callback);
+    }, function (code) {
+      if (program.childrenOnly) {
+        process.exit(code);
+        return;
       }
 
       console.log('Execute: ' + chalk.yellow(command) + ' ' + chalk.gray('(' + process.cwd() + ')'));

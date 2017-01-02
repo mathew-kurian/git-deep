@@ -1,11 +1,13 @@
 {
   "bin": "index.js",
   "dependencies": {
+    "async": "^2.1.4",
     "chalk": "^1.1.3",
-    "commander": "^2.9.0"
+    "commander": "^2.9.0",
+    "escape-quotes": "^1.0.2"
   },
   "name": "git-deep",
-  "version": "1.0.4",
+  "version": "1.0.7",
   "description": "Send commands recursively through git submodules",
   "main": "index.js",
   "repository": "https://github.com/bluejamesbond/git-deep",
