@@ -7,10 +7,10 @@
     "escape-quotes": "^1.0.2"
   },
   "name": "git-deep",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "description": "Send commands recursively through git submodules",
   "main": "index.js",
   "repository": "https://github.com/bluejamesbond/git-deep",
-  "author": "bluejamesbond <MathewKurian@utexas.edu>",
+  "author": "bluejamesbond <bluejamesbond@gmail.com>",
   "license": "MIT"
 }
