@@ -18,7 +18,7 @@ program
   .parse(process.argv);
 
 function exec(command, cwd) {
-  if (!~process.platform.indexOf('win')) {
+  if (~process.platform.indexOf('win')) {
     return spawn('cmd', ['/s', '/c', command], {
       stdio: ['ignore', process.stdout, process.stderr],
       cwd: cwd || process.cwd()
